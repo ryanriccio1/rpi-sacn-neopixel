@@ -1,17 +1,27 @@
 class SacnUniverse(object):
     def __init__(self, universe, sacn_receiver, pixel_strands):
+        """
+        Software universe constructor
+
+        :param universe: The software universe number
+        :type universe: int
+        :param sacn_receiver: The main receiver thread
+        :type sacn_receiver: sacn.sACNreceiver
+        :param pixel_strands: The strands in this universe
+        :type pixel_strands: list
+
+        :return: None
+        """
         self._universe = universe
         self._sacn_receiver = sacn_receiver
 
+        # define callback
         @self._sacn_receiver.listen_on('universe', universe=self._universe)
         def callback(packet):
-            for current_strand in enumerate(pixel_strands):
-                # does not need to know end addr, will write from start, to end of univ, or end of pixels
-                # pixel_strands = [ [strand]    [1, 1]  [1,15]  ], [...]
-                #                   [x][0]   [x][1][1]  [x][2]
-                pixel_strands[current_strand][0].write(packet.dmxData, self._universe,
-                                                       pixel_strands[current_strand][1],
-                                                       pixel_strands[current_strand][2])
+            # loop through each strand in universe and write given information
+            for current_strand in iter(pixel_strands):
+                current_strand[0].write(packet.dmxData, self._universe, current_strand[1][0], current_strand[1][1])
 
+        # join multicast (do not need to specify IP on sending node) and tell the console
         self._sacn_receiver.join_multicast(self._universe)
         print(f"Universe {self._universe} started...")

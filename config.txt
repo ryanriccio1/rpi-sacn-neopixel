@@ -1,20 +1,16 @@
 [DMX Out]
-pixel_pattern = neopixel.GRB
-strand_amount = 1
+pixel_pattern = neopixel.RGB
+strand_amount = 3
 pack_universes = yes
 
-strand1.pixels = 341
+strand1.pixels = 5
 strand1.universe_start = 1
-strand1.pin = board.D10
+strand1.pin = board.D12
 
 strand2.pixels = 5
 strand2.universe_start = auto
-strand2.pin = board.D12
+strand2.pin = board.D18
 
 strand3.pixels = 5
 strand3.universe_start = auto
-strand3.pin = board.D18
-
-strand4.pixels = 5
-strand4.universe_start = auto
-strand4.pin = board.D21
+strand3.pin = board.D21
