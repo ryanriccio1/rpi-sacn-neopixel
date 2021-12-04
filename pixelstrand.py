@@ -1,10 +1,14 @@
 import neopixel
 import board
+from customlogs import Log
 
 
 class PixelStrand(object):
+    strands = [[]]
+    used_pins = []
+
     def __init__(self, pin=board.D12, amount=5, pattern=neopixel.GRB, start_universe=1, start_address=1,
-                 pack_universes=False, pixel_bytes=3):
+                 pack_universes=False, pixel_bytes=3, pixel_offset=0, export_patch=False):
         """
         NeoPixel strand constructor
 
@@ -22,6 +26,8 @@ class PixelStrand(object):
         :type pack_universes: bool
         :param pixel_bytes: Number of bytes used per pixel ex. RGB = 3, RGBW = 4
         :type pixel_bytes: int
+        :param pixel_offset: Number of pixels to offset start by
+        :type pixel_offset: int
 
         :return: None
         """
@@ -42,17 +48,23 @@ class PixelStrand(object):
         self._pattern = self._pattern_dict[pattern]
 
         # create protected members
-        self._amount = amount
+        self._amount = amount + pixel_offset
         self._start_universe = start_universe
         self._start_address = start_address
         self._pack_universes = pack_universes  # share universe between strand
         self._pixel_bytes = pixel_bytes  # ex. RGB = 3, RGBW = 4
+        self._pixel_offset = pixel_offset
+        self._export_patch = export_patch
 
         # address "patch" for strand
         self._address_dict = {}
 
         self.calculate_addresses()  # fill "patch" and create neopixel strand
-        self._pixels = neopixel.NeoPixel(self._pin, 5, brightness=0.2, auto_write=False, pixel_order=self._pattern)
+        self._pixels = neopixel.NeoPixel(self._pin, self._amount, brightness=0.2,
+                                         auto_write=False, pixel_order=self._pattern)
+
+        if self._export_patch:
+            self.export_patch()
 
     def write(self, dmx, universe, address_start, address_end):
         """
@@ -70,12 +82,12 @@ class PixelStrand(object):
         :return: None
         """
         # loop through each pixel in the amount of pixels in universe
-        for pixel_index in range(int((address_end - address_start) / 3) + 1):
+        for pixel_index in range(self._pixel_offset, int((address_end - address_start) / 3) + 1 + self._pixel_offset):
             # lookup and offset packet index from "patch"
             byte1 = self._address_dict[universe][pixel_index][1] - 1
             byte2 = byte1 + 1
             byte3 = byte1 + 2
-            print((dmx[byte1], dmx[byte2], dmx[byte3]))
+            # print((dmx[byte1], dmx[byte2], dmx[byte3]))
             self._pixels[pixel_index] = (dmx[byte1], dmx[byte2], dmx[byte3])
         self._pixels.show()
 
@@ -85,7 +97,7 @@ class PixelStrand(object):
 
         :return: None
         """
-        addr = self._start_address
+        addr = self._start_address - (self._pixel_offset * self._pixel_bytes)
         univ = self._start_universe
         address_table = {
             univ: []
@@ -177,3 +189,15 @@ class PixelStrand(object):
         # lookup last address in last pixel of given universe plus pixel_bytes not including
         # the starting address
         return self._address_dict[universe][-1][1] + self._pixel_bytes - 1
+
+    def export_patch(self):
+        with open("file.csv", 'a') as file:
+            file.write("universe,pixel,addr\n")
+            for univ, pixels in self._address_dict.items():
+                for pixel in pixels:
+                    file.write(f'{univ},{pixel[0]},{pixel[1]}\n')
+            file.write('\n')
+
+    @property
+    def pin(self):
+        return self._pin

@@ -1,0 +1,46 @@
+# examples found at
+# https://learn.adafruit.com/running-programs-automatically-on-your-tiny-computer/systemd-writing-and-enabling-a-service
+# https://medium.com/@johannes_gehrs/getting-started-with-systemd-on-debian-jessie-e024758ca63d
+# https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Before=
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Wants=
+
+# copy to target with:
+#   sudo cp olad.service /etc/systemd/system/
+# enable service
+#   sudo systemctl enable olad.service
+# start
+#   sudo systemctl start olad.service
+# check status
+#   sudo systemctl status olad.service
+# disable service
+#   sudo systemctl disable olad.service
+# remove service file:
+#   sudo rm /etc/systemd/system/olad.service
+
+[Unit]
+Description=OLAD Open Lighting Architecture daemon
+# wants would mean if this unit is started it also starts the wanted unit.
+# we don't need this because device_manager itself starts this unit explicitly if its time.
+# Wants=device_manager.service
+# After means that this unit only starts if the listed unit is started
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
+After=network.target
+
+[Service]
+# Type=simple is default
+Type=simple
+# run as user
+User=pi
+# commandline
+ExecStart=/usr/local/bin/olad -c /home/pi/.ola
+# redirect standard output to
+StandardOutput=null
+# if process exits (with fail or success) restart it.
+Restart=always
+
+[Install]
+# start with system.
+WantedBy=multi-user.target
+Alias=olad.service

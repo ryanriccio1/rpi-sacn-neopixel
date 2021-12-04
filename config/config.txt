@@ -1,16 +1,23 @@
 [DMX Out]
 pixel_pattern = neopixel.RGB
-strand_amount = 3
+strand_amount = 2
 pack_universes = yes
+use_ola = yes
+export_patch = yes
+write_logs = yes
+log_level = 4
 
 strand1.pixels = 5
+strand1.pixel_offset = 0
 strand1.universe_start = 1
-strand1.pin = board.D12
+strand1.pin = board.D21
 
 strand2.pixels = 5
+strand2.pixel_offset = 0
 strand2.universe_start = auto
 strand2.pin = board.D18
 
 strand3.pixels = 5
+strand3.pixel_offset = 0
 strand3.universe_start = auto
-strand3.pin = board.D21
+strand3.pin = board.D12

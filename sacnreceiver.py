@@ -1,27 +1,15 @@
-class SacnUniverse(object):
-    def __init__(self, universe, sacn_receiver, pixel_strands):
-        """
-        Software universe constructor
+import customlogs
+from universe import Universe
+from customlogs import Log
 
-        :param universe: The software universe number
-        :type universe: int
-        :param sacn_receiver: The main receiver thread
-        :type sacn_receiver: sacn.sACNreceiver
-        :param pixel_strands: The strands in this universe
-        :type pixel_strands: list
 
-        :return: None
-        """
-        self._universe = universe
-        self._sacn_receiver = sacn_receiver
+class SacnUniverse(Universe):
+    client = None
 
-        # define callback
-        @self._sacn_receiver.listen_on('universe', universe=self._universe)
-        def callback(packet):
-            # loop through each strand in universe and write given information
-            for current_strand in iter(pixel_strands):
-                current_strand[0].write(packet.dmxData, self._universe, current_strand[1][0], current_strand[1][1])
+    def __init__(self, universe, pixel_strands):
+        super().__init__(universe, pixel_strands)
+        SacnUniverse.client.register_listener('universe', self._set_data, universe=self._universe)
 
-        # join multicast (do not need to specify IP on sending node) and tell the console
-        self._sacn_receiver.join_multicast(self._universe)
-        print(f"Universe {self._universe} started...")
+        Log.write_log("Joining multicast stream...", Log.LogLevel.LEVEL3)
+        SacnUniverse.client.join_multicast(self._universe)
+        Log.write_log(f"Universe {self._universe} created...", Log.LogLevel.LEVEL1)

@@ -1,0 +1,4 @@
+echo Starting lights...
+sudo screen -dmS lights python3 /home/pi/light_starter.py
+echo 'To access console, go to \033[5msudo screen -r lights\033[0m'
+echo To return to this screen, press Ctrl+A then D

@@ -1,0 +1,14 @@
+[Unit]
+Description=RPI Neopixel Python Service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
+After=network.target
+After=olad.service
+
+[Service]
+Type=idle
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/python3 /home/pi/light_starter.py
+
+[Install]
+WantedBy=multi-user.target

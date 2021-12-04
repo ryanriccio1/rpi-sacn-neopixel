@@ -1,0 +1,6 @@
+*.log
+__pycache__/
+.idea/
+/config.txt
+*.img
+*.csv
