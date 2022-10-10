@@ -1,5 +1,11 @@
 # rpi-sacn-neopixel
-Small little python program to try and output WS2811/2b on multiple pins of the RPI (tested on RPI4 rev 1.1)
+Small little python program to output WS2811/2b on multiple pins of the arm64 single board development computer, Raspberry Pi (tested on RPi4 rev 1.1).
+
+**WS2811** is the protocol used to control a strand of individually addressable LEDs. They require data at a constant clock signal and will update the entire stand at once. This is an issue because the Raspberry Pi is a non-realtime OS (possible variable clock signal) which makes scheduling and writing data to the pins an issue. Luckily, the RPi has a standalone SPI (Serial Peripheral Interface) chip that can interface with the kernel with its own separate clock (2MHz). Sychronizing this data is the difficult part. Starting with the RPi 4 there were more than 1 configurable SPI chips that can be swapped in place for use on pins.
+
+Where does the RPi get its data from to write to the lights? In the professional lighting world, a lighting console will send data to lighting fixutres over a protocol called **"DMX"** (WS2811 uses SPI, not DMX). The DMX is made up of "universes", with each universe containing 512 8-bit values of data used to control the lights. A DMX cable normally only carries 1 universe over 3 pins. There is a protocol called **"sACN"** (Streaming Architecture for Control Networks) which allows for 63,999 universes to be multicast to the local network, rather than over a physical cable. A single pixel on a strand of WS2811 LEDs will use of 3 of these 8-bit values (red, green, blue), meaning that only 170 pixels can fit on 1 universe. This requires we combine multiple universes being updated at multiple times to make a pixel chain longer than 170 (keeping in mind the entire pixel strand needs to be updated at once). 
+
+We use the Adafruit Neopixel module to make creating the SPI frames easier, and the sACN module to handle the network traffic. There is also intergration with an open source project called **"OpenLightingArch (OLA)"** which allows easy, over IP configuration changes of the universes and their data sources.
 ## Installation
 Install the modules needed (needs Python 3.7+)
 ```shell
